@@ -24,7 +24,15 @@
     </v-row>
     </v-container>
       <v-container class="my-10">
-        <h1 class="subheading greay--text">Bruger</h1>
+        <v-row>
+          <v-col>
+            <h1 class="subheading greay--text">Bruger</h1>
+          </v-col>
+          <v-spacer></v-spacer>
+          <v-col class="float-right">
+            <Popup />
+          </v-col>
+        </v-row>
       <v-expansion-panels>
         <v-expansion-panel v-for="bruger in brugere" :key="bruger.email">
           <v-expansion-panel-header>{{
@@ -32,7 +40,6 @@
           }}</v-expansion-panel-header>
           <v-expansion-panel-content class="px-4 grey--text">
             <div>Password: {{ bruger.kodeord }}</div>
-            <div><Popup /></div>
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
@@ -46,27 +53,28 @@
 import Popup from '@/components/popup.vue'
 import Navbar from '@/components/header.vue'
 import Footer from '@/components/footer.vue'
+import db from '@/fb'
 
 export default {
   name: 'bruger',
   components: { Navbar, Popup, Footer },
   data () {
     return {
-      brugere: [
-        {
-          email: 'bob@jf.dk',
-          kodeord: 123
-        },
-        {
-          email: 'bob@jf.dk',
-          kodeord: 123
-        },
-        {
-          email: 'bob@jf.dk',
-          kodeord: 123
-        }
-      ]
+      brugere: []
     }
+  },
+  created () {
+    db.collection('brugere').onSnapshot(res => {
+      const changes = res.docChanges()
+      changes.forEach(change => {
+        if (change.type === 'added') {
+          this.brugere.push({
+            ...change.doc.data(),
+            id: change.doc.id
+          })
+        }
+      })
+    })
   }
 }
 </script>

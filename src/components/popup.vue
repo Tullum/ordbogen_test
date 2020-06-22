@@ -30,7 +30,7 @@
                     required
                     :rules="passwordRules"
                     ></v-text-field>
-                    <v-btn color="#0ea389" dark class="mx-0 mt-3" @click="submit">
+                    <v-btn color="#0ea389" dark class="mx-0 mt-3" @click="submit" :loading="loading">
                         Opret bruger
                     </v-btn>
                 </v-form>
@@ -40,11 +40,12 @@
 </template>
 
 <script>
+import db from '@/fb'
+
 export default {
   name: 'Popup',
   data () {
     return {
-      dialog: false,
       id: '1',
       email: '',
       password: '',
@@ -57,14 +58,23 @@ export default {
         v => (v && v.length >= 5) || 'Password skal have mindst 5 tegn',
         v => /(?=.*[A-Z])/.test(v) || 'Password skal have et stort bogstav',
         v => /([!@%&?=])/.test(v) || 'Password skal indeholde et specialtegn [!@%&?=]'
-      ]
+      ],
+      loading: false,
+      dialog: false
     }
   },
   methods: {
     submit () {
       if (this.$refs.form.validate()) {
-        // eslint-disable-next-line no-console
-        console.log(this.email, this.password)
+        this.loading = true
+        const bruger = {
+          email: this.email,
+          password: this.password
+        }
+        db.collection('brugere').add(bruger).then(() => {
+          this.loading = false
+          this.dialog = false
+        })
       }
     }
   }
